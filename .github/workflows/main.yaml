@@ -1,49 +1,51 @@
-name: Teste lnx
+name: 'Terraform'
 
-on: 
-  workflow_dispatch:
+on:
+  push:
+  #   branches: [ "master" ]
+  # pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-
   terraform:
-    name: 'Terraform - Ubuntu'
-    runs-on: Self-hosted
+    name: 'Terraform'
+    env: 
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    runs-on: ubuntu-latest
+    environment: production
 
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
 
     steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Code Checkout
-        id: checkout
-        uses: actions/checkout@v3
+    # Install the latest version of Terraform CLI 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
 
-      - name: Azure Auth
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_SP_SECRET }}
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
 
-      - name: JSON Parse
-        id: parse
-        env:
-          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
-        run: |
-          ARM_CLIENT_ID=$(echo $AZURE_SP_SECRET | jq -r '.["clientId"]')
-          ARM_CLIENT_SECRET=$(echo $AZURE_SP_SECRET | jq -r '.["clientSecret"]')
-          ARM_TENANT_ID=$(echo $AZURE_SP_SECRET | jq -r '.["tenantId"]')
-          ARM_SUBSCRIPTION_ID=$(echo $AZURE_SP_SECRET | jq -r '.["subscriptionId"]')
-          echo ARM_CLIENT_ID=$ARM_CLIENT_ID >> $GITHUB_ENV
-          echo ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET >> $GITHUB_ENV
-          echo ARM_TENANT_ID=$ARM_TENANT_ID >> $GITHUB_ENV
-          echo ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID >> $GITHUB_ENV
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
 
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2.0.3
-        with:
-          terraform_version: 3.0.0
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -input=false
 
-      - name: Terraform Init
-        id: init
-        run: |
-          terraform init
+     # On push to "master", build or change infrastructure according to Terraform configuration files
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/"master"' && github.event_name == 'push'
+      run: terraform apply -auto-approve -input=false
