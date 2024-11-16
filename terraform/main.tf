@@ -78,11 +78,10 @@ resource "azurerm_linux_virtual_machine" "nginx" {
     azurerm_network_interface.nic01.id,
   ]
 
-  admin_ssh_key {
-    username   = "lnxuser"
-    public_key = var.public_key
-    # public_key = file("~/.ssh/id_rsa.pub")
-  }
+  # admin_ssh_key {
+  #   username   = "lnxuser"
+  #   public_key = file("~/.ssh/id_rsa.pub")
+  # }
 
   os_disk {
     caching              = "ReadWrite"
