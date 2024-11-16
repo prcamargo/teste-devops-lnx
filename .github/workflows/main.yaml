@@ -5,35 +5,45 @@ on:
 
 jobs:
 
-  build-and-deploy:
-    runs-on: ubuntu-latest
+  terraform:
+    name: 'Terraform - Ubuntu'
+    runs-on: Self-hosted
+
+    defaults:
+      run:
+        shell: bash
+
     steps:
 
-    - name: Azure Auth
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_SP_SECRET }}
+      - name: Code Checkout
+        id: checkout
+        uses: actions/checkout@v3
 
-    - name: JSON Parse
-      id: parse
-      env:
-        AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
-      run: |
-        ARM_CLIENT_ID=$(echo $AZURE_SP_SECRET | jq -r '.["clientId"]')
-        ARM_CLIENT_SECRET=$(echo $AZURE_SP_SECRET | jq -r '.["clientSecret"]')
-        ARM_TENANT_ID=$(echo $AZURE_SP_SECRET | jq -r '.["tenantId"]')
-        ARM_SUBSCRIPTION_ID=$(echo $AZURE_SP_SECRET | jq -r '.["subscriptionId"]')
-        echo ARM_CLIENT_ID=$ARM_CLIENT_ID >> $GITHUB_ENV
-        echo ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET >> $GITHUB_ENV
-        echo ARM_TENANT_ID=$ARM_TENANT_ID >> $GITHUB_ENV
-        echo ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID >> $GITHUB_ENV
+      - name: Azure Auth
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_SP_SECRET }}
 
-    - name: Install Terraform
-      uses: hashicorp/setup-terraform@v2.0.3
-      with:
-        terraform_version: 1.3.5
+      - name: JSON Parse
+        id: parse
+        env:
+          AZURE_SP_SECRET: ${{ secrets.AZURE_SP_SECRET }}
+        run: |
+          ARM_CLIENT_ID=$(echo $AZURE_SP_SECRET | jq -r '.["clientId"]')
+          ARM_CLIENT_SECRET=$(echo $AZURE_SP_SECRET | jq -r '.["clientSecret"]')
+          ARM_TENANT_ID=$(echo $AZURE_SP_SECRET | jq -r '.["tenantId"]')
+          ARM_SUBSCRIPTION_ID=$(echo $AZURE_SP_SECRET | jq -r '.["subscriptionId"]')
+          echo ARM_CLIENT_ID=$ARM_CLIENT_ID >> $GITHUB_ENV
+          echo ARM_CLIENT_SECRET=$ARM_CLIENT_SECRET >> $GITHUB_ENV
+          echo ARM_TENANT_ID=$ARM_TENANT_ID >> $GITHUB_ENV
+          echo ARM_SUBSCRIPTION_ID=$ARM_SUBSCRIPTION_ID >> $GITHUB_ENV
 
-    - name: Terraform Init
-      id: init
-      run: |
-        terraform init
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2.0.3
+        with:
+          terraform_version: 3.0.0
+
+      - name: Terraform Init
+        id: init
+        run: |
+          terraform init
