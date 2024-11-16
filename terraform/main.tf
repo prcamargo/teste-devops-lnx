@@ -10,7 +10,6 @@ terraform {
     resource_group_name = "rg-terraform"
     storage_account_name = "terraformgitactions"
     container_name = "tfstate"
-    #key = "8he1OC/aQpX48oWZOqmHxPCvm7mE7jeVHpjwcyBCsJQ+6WC7PUZ5xv1qiubgGDK2OW8p9RtO/s23+AStCl3z1Q=="
   }
 }
 
