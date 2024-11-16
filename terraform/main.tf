@@ -97,7 +97,7 @@ resource "azurerm_linux_virtual_machine" "nginx" {
     version   = "latest"
   }
 
-  custom_data = filebase64("scripts/deploy_nginx.sh")
+  #custom_data = filebase64("scripts/deploy_nginx.sh")
 }
 
 #ip public (iis)
@@ -147,19 +147,3 @@ resource "azurerm_windows_virtual_machine" "iis" {
   }
 
 }
-
-#install iis
-resource "azurerm_virtual_machine_extension" "install_iis" {
-  name                 = "install_iis"
-  virtual_machine_id   = azurerm_windows_virtual_machine.iis.id
-  publisher            = "Microsoft.Compute"
-  type                 = "CustomScriptExtension"
-  type_handler_version = "1.9"
-
-  settings = <<SETTINGS
- {
-  "commandToExecute": "powershell -encodedCommand ${textencodebase64(file("scripts/deploy_iis.ps1"), "UTF-16LE")}"
- }
-SETTINGS
-}
-
