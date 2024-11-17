@@ -79,21 +79,16 @@ jobs:
           python <<EOF
           import json
 
-          # with open('./terrraform/outputs.json') as f:
-          #   outputs = json.load(f)
-
           inventory = f"""
           all:
             hosts:
               windows:
-                #ansible_host: {outputs['iis_public']['value']}
                 ensible_host: ${IIS_IP}
                 ansible_user: lnxuser
                 ansible_password: !q2w3e4r
                 ansible_connection: winrm
                 ansible_winrm_transport: basic
               linux:
-                #ansible_host: {outputs['nginx_public']['value']}
                 ansible_host: ${NGINX_IP}
                 ansible_user: lnxuser
                 ansible_password: !q2w3e4r5t
