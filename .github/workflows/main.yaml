@@ -112,5 +112,5 @@ jobs:
 
     # Step 9: Run Ansible Playbook
     - name: Run Ansible Playbook
-      run: ansible-playbook -i ./ansible/inventory.yml ./ansible/site.yml
+      run: ansible-playbook -i ./ansible/in.yml ./ansible/tasks.yml
 
