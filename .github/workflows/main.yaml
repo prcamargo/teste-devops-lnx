@@ -48,3 +48,52 @@ jobs:
     - name: Terraform Apply 
       # if: github.ref == 'refs/heads/"master"' && github.event_name == 'push'
       run: cd terraform && terraform apply -auto-approve 
+
+  ansible:
+    - name: Get terraform output
+      id: terraform_outputs
+      working-directory: ./terraform
+      run: |
+          terraform output -json > outputs.json
+      env:
+        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install Ansible
+      run: |
+          python <<EOF
+          import json
+
+          with open('./terrraform/outputs.json') as f:
+            outputs = json.load(f)
+
+          inventory = f"""
+          all:
+            hosts:
+              windows:
+                ansible_host: {outputs['iis_public']['value']}
+                ansible_user: lnxuser
+                ansible_password: !q2w3e4r
+                ansible_connection: winrm
+                ansible_winrm_transport: basic
+              linux:
+                ansible_host: {outputs['nginx_public']['value']}
+                ansible_user: lnxuser
+                ansible_password: !q2w3e4r5t
+                ansible_connection: ssh
+          """
+
+          with open('./ansible/inventory.yml', 'w') as f:
+              f.write(inventory)
+          EOF
+
+    # Step 9: Run Ansible Playbook
+    - name: Run Ansible Playbook
+      run: ansible-playbook -i ./ansible/inventory.yml ./ansible/site.yml

@@ -1,0 +1,13 @@
+all:
+  hosts:
+    windows:
+      ansible_host: <IP_WINDOWS>
+      ansible_user: lnxuser
+      ansible_password: lnxuser
+      ansible_connection: winrm
+      ansible_winrm_transport: basic
+    linux:
+      ansible_host: <IP_LINUX>
+      ansible_user: lnxuser
+      ansible_password: "!q2w3e4r5t"
+      ansible_connection: ssh
