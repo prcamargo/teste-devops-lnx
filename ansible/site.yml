@@ -2,11 +2,41 @@
 - name: Deploy .NET Application to IIS
   hosts: windows
   tasks:
+
+  #Create folder at client
+    - name: Create C:\temp
+      win_file:
+        path: C:\temp
+        state: directory 
+
+    - name: Upgrade installed packages
+      win_chocolatey:
+        name: all
+        state: latest
+
+    - name: Install Chocolatey
+      win_get_url:
+        url: https://chocolatey.org/install.ps1
+        dest: C:\temp\install.ps1
+    - name: Run Chocolatey installation
+      win_shell: powershell.exe -ExecutionPolicy Bypass -File C:\temp\install.ps1
+      args:
+        removes:
+          - C:\temp\install.ps1
+
     - name: Install IIS and .NET Hosting Bundle
       win_chocolatey:
-        name: dotnet-hosting-6.0
+        name: dotnet-6.0-windowshosting
+        version: '6.0.36'
+        source: https://community.chocolatey.org/api/v2/
         state: present
-        source: https://chocolatey.org/api/v2/
+
+    - name: Install IIS with all features
+      win_feature:
+        name: Web-Server
+        include_sub_features: true
+        include_management_tools: true
+        state: present
 
     - name: Ensure IIS is running
       win_service:
@@ -28,7 +58,7 @@
         name: WeatherForecast
         state: started
         physical_path: C:\inetpub\wwwroot\weather-app
-        port: 80
+        port: 8080
         ip: "*"
 
     - name: Restart IIS

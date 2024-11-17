@@ -98,7 +98,14 @@ jobs:
           with open('./ansible/inventory.yml', 'w') as f:
               f.write(inventory)
           EOF
+          cat ./ansible/inventory.yml
+
+    # clone repo
+    - name: Clone Weather Forecast App
+      run: |
+        git clone https://github.com/sample-accelerators/csharp-weatherforecast.git ./weather-app
 
     # Step 9: Run Ansible Playbook
     - name: Run Ansible Playbook
       run: ansible-playbook -i ./ansible/inventory.yml ./ansible/site.yml
+
