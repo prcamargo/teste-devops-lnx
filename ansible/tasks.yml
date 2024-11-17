@@ -1,0 +1,117 @@
+---
+- name: Deploy .NET Application to IIS
+  hosts: iis
+  tasks:
+    - name: Create C:\temp
+      win_file:
+        path: C:\temp
+        state: directory
+
+    - name: Install Chocolatey
+      win_get_url:
+        url: https://chocolatey.org/install.ps1
+        dest: C:\temp\install.ps1
+    - name: Run Chocolatey installation
+      win_shell: powershell.exe -ExecutionPolicy Bypass -File C:\temp\install.ps1
+      args:
+        removes:
+          - C:\temp\install.ps1
+
+    - name: Install .NET Hosting Bundle
+      win_chocolatey:
+        name: dotnet-6.0-windowshosting
+        version: '6.0.36'
+        source: https://community.chocolatey.org/api/v2/
+        state: present
+
+    - name: Install .NET SDK
+      win_chocolatey:
+        name: dotnet-6.0-sdk
+        version: '6.0.428'
+        source: https://community.chocolatey.org/api/v2/
+        state: present
+
+    - name: Install IIS with all features
+      win_feature:
+        name: Web-Server
+        include_sub_features: true
+        include_management_tools: true
+        state: present
+
+    - name: Ensure IIS is running
+      win_service:
+        name: W3SVC
+        state: started
+
+    - name: Create C:\weather-app
+      win_file:
+        path: C:\inetpub\wwwroot\weather-app
+        state: directory 
+
+    - name: Copy application files
+      win_copy:
+        src: ../weather-app
+        dest: C:\temp
+
+    - name: Build application
+      win_shell: |
+        cd C:\temp\weather-app
+        dotnet publish -c Release -o C:\inetpub\wwwroot\weather-app
+
+    - name: criar application pool 
+      win_iis_webapppool:
+        name: 'WeatherApp'
+        state: started
+        attributes:
+          managedRuntimeVersion: ''
+          autoStart: true
+
+    - name: Create IIS Site for Weather App
+      win_iis_website:
+        name: WeatherForecast
+        state: started
+        physical_path: C:\inetpub\wwwroot\weather-app
+        port: 8080
+        ip: "*"
+        application_pool: 'WeatherApp'
+
+    - name: Restart IIS
+      win_shell: iisreset
+
+- name: Configure Nginx proxy reverse
+  hosts: nginx
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Copy proxy configuration
+      copy:
+        src: files/proxy.conf
+        dest: /etc/nginx/sites-available/proxy.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Enable proxy configuration
+      file:
+        src: /etc/nginx/sites-available/proxy.conf
+        dest: /etc/nginx/sites-enabled/proxy.conf
+        state: link
+
+    - name: Remove default configuration
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Test Nginx configuration
+      command: nginx -t
+      register: nginx_test
+      failed_when: nginx_test.rc != 0
+      changed_when: false
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

@@ -74,36 +74,41 @@ jobs:
       with:
         python-version: "3.9"
 
-    - name: Install Ansible
-      run: |
-          python <<EOF
-          import json
+    # - name: Install Ansible
+    #   run: |
+    #       python <<EOF
+    #       import os
 
-          inventory = f"""
-          all:
-            hosts:
-              windows:
-                ensible_host: ${IIS_IP}
-                ansible_user: lnxuser
-                ansible_password: !q2w3e4r
-                ansible_connection: winrm
-                ansible_winrm_transport: basic
-              linux:
-                ansible_host: ${NGINX_IP}
-                ansible_user: lnxuser
-                ansible_password: !q2w3e4r5t
-                ansible_connection: ssh
-          """
+    #       iis_ip = os.getenv('IIS_IP')
+    #       nginx = os.getenv('NGINX_IP')
 
-          with open('./ansible/inventory.yml', 'w') as f:
-              f.write(inventory)
-          EOF
-          cat ./ansible/inventory.yml
+    #       inventory = f"""
+    #       all:
+    #         hosts:
+    #           windows:
+    #             ensible_host: f{iis_ip}
+    #             ansible_user: lnxuser
+    #             ansible_password: "!q2w3e4r"
+    #             ansible_connection: winrm
+    #             ansible_port: 5985
+    #             ansible_winrm_scheme: http
+    #             ansible_winrm_transport: basic
+    #           linux:
+    #             ansible_host: f{nginx_ip}
+    #             ansible_user: lnxuser
+    #             ansible_password: !q2w3e4r5t
+    #             ansible_connection: ssh
+    #       """
+
+    #       with open('./ansible/inventory.yml', 'w') as f:
+    #           f.write(inventory)
+    #       EOF
 
     # clone repo
     - name: Clone Weather Forecast App
       run: |
         git clone https://github.com/sample-accelerators/csharp-weatherforecast.git ./weather-app
+        ls
 
     # Step 9: Run Ansible Playbook
     - name: Run Ansible Playbook
