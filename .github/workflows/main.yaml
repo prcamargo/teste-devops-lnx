@@ -48,16 +48,26 @@ jobs:
       # if: github.ref == 'refs/heads/"master"' && github.event_name == 'push'
       run: cd terraform && terraform apply -auto-approve 
 
-    - name: Get terraform output
-      id: terraform_outputs
+    # - name: Get terraform output
+    #   id: terraform_outputs
+    #   working-directory: ./terraform
+    #   run: |
+    #       terraform output -json > outputs.json
+    #   env:
+    #     ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+    #     ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+    #     ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+    #     ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+
+    - name: Get ip public
+      id: terrafor_outputs
       working-directory: ./terraform
       run: |
-          terraform output -json > outputs.json
-      env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+          NGINX_IP=$(terraform output -raw nginx_public)
+          IIS_IP=$(terraform output -raw iis_public)
+
+          echo "linux $NGINX_IP"
+          echo "windows $IIS_IP"
 
     - name: Setup Python
       uses: actions/setup-python@v4
