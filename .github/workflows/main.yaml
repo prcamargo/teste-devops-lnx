@@ -20,7 +20,6 @@ jobs:
     name: 'Terraform'
 
     runs-on: ubuntu-latest
-    environment: production
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
@@ -50,6 +49,15 @@ jobs:
       run: cd terraform && terraform apply -auto-approve 
 
   ansible:
+    name: 'Ansible'
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
     - name: Get terraform output
       id: terraform_outputs
       working-directory: ./terraform
