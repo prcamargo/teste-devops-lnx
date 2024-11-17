@@ -5,6 +5,8 @@ all:
       ansible_user: lnxuser
       ansible_password: "!q2w3e4r"
       ansible_connection: winrm
+      ansible_port: 5985
+      ansible_winrm_scheme: http
       ansible_winrm_transport: basic
     linux:
       ansible_host: 52.232.191.175

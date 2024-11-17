@@ -1,11 +1,38 @@
 ---
-- name: Configure IIS on Windows
+- name: Deploy .NET Application to IIS
   hosts: windows
   tasks:
-    - name: Install IIS
-      win_feature:
-        name: Web-Server
+    - name: Install IIS and .NET Hosting Bundle
+      win_chocolatey:
+        name: dotnet-hosting-6.0
         state: present
+        source: https://chocolatey.org/api/v2/
+
+    - name: Ensure IIS is running
+      win_service:
+        name: W3SVC
+        state: started
+
+    - name: Copy application files
+      win_copy:
+        src: ./weather-app
+        dest: C:\inetpub\wwwroot\weather-app
+
+    - name: Build application
+      win_shell: |
+        cd C:\inetpub\wwwroot\weather-app
+        dotnet build -c Release
+
+    - name: Create IIS Site for Weather App
+      win_iis_website:
+        name: WeatherForecast
+        state: started
+        physical_path: C:\inetpub\wwwroot\weather-app
+        port: 80
+        ip: "*"
+
+    - name: Restart IIS
+      win_shell: iisreset
 
 - name: Configure Nginx on Linux
   hosts: linux
