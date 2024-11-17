@@ -158,7 +158,7 @@ resource "azurerm_virtual_machine_extension" "enable_winrm" {
 
   settings = <<SETTINGS
  {
-  "commandToExecute": "powershell -encodedCommand ${textencodebase64(file("scripts/enable_WinRm.ps1"), "UTF-16LE")}"
+  "commandToExecute": "powershell -encodedCommand ${textencodebase64(file("scripts/winrm.ps1"), "UTF-16LE")}"
  }
 SETTINGS
 }

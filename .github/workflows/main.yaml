@@ -16,8 +16,8 @@ env:
   ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
 
 jobs:
-  terraform:
-    name: 'Terraform'
+  Deploy:
+    name: 'Deploy'
 
     runs-on: ubuntu-latest
 
@@ -48,16 +48,6 @@ jobs:
       # if: github.ref == 'refs/heads/"master"' && github.event_name == 'push'
       run: cd terraform && terraform apply -auto-approve 
 
-  ansible:
-    name: 'Ansible'
-
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        shell: bash
-
-    steps:
     - name: Get terraform output
       id: terraform_outputs
       working-directory: ./terraform
