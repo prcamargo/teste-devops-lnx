@@ -14,6 +14,8 @@ env:
   ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
   ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
   ARM_ACCESS_KEY: ${{ secrets.ARM_ACCESS_KEY }}
+  IIS_PWD: ${{ secrets.IIS_PWD }}
+  NGINX_PWD: ${{ secrets.NGINX_PWD }}
 
 jobs:
   Terraform:
@@ -39,38 +41,40 @@ jobs:
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
-      run: cd terraform && terraform plan -input=false
+      run: cd terraform && terraform plan
 
      # On push to "master", build or change infrastructure according to Terraform configuration files
     - name: Terraform Apply 
-      # if: github.ref == 'refs/heads/"master"' && github.event_name == 'push'
       run: cd terraform && terraform apply -auto-approve 
 
-    - name: Get terraform output
-      id: terraform_outputs
-      working-directory: ./terraform
-      run: |
-          terraform output -json > outputs.json
-      env:
-        ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-        ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-        ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-        ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
+    # - name: Get terraform output
+    #   id: terraform_outputs
+    #   working-directory: ./terraform
+    #   run: |
+    #       terraform output -json > outputs.json
+    #   env:
+    #     ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
+    #     ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
+    #     ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
+    #     ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
 
-    - name: Get ip public
-      id: terrafor_outputs
+    # - name: Get ip public
+    #   id: terrafor_outputs
+    #   working-directory: ./terraform
+    #   run: |
+    #       NGINX_IP=$(terraform output -raw nginx_public)
+    #       IIS_IP=$(terraform output -raw iis_public)
+
+    #       echo "linux $NGINX_IP"
+    #       echo "windows $IIS_IP"
+
+    - name: Get IPs VMs
       working-directory: ./terraform
       run: |
-          NGINX_IP=$(terraform output -raw nginx_public)
           IIS_IP=$(terraform output -raw iis_public)
-
-          echo "linux $NGINX_IP"
-          echo "windows $IIS_IP"
-
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.9"
+          echo "IIS_IP=$IIS_IP" >> $GITHUB_ENV
+          NGINX_IP=$(terraform output -raw nginx_public)
+          echo "NGINX_IP=$NGINX_IP" >> $GITHUB_ENV
 
     # clone repo
     - name: Clone Weather Forecast App
@@ -85,7 +89,7 @@ jobs:
         all:
           hosts:
             iis:
-              ansible_host: ${IIS_IP}"
+              ansible_host: ${{ env.IIS_IP }}"
               ansible_user: lnxuser
               ansible_password: ${IIS_PWD}
               ansible_connection: winrm
@@ -93,7 +97,7 @@ jobs:
               ansible_winrm_scheme: http
               ansible_winrm_transport: basic
             nginx:
-              ansible_host: ${NGINX_IP}
+              ansible_host: ${{ env.NGINX_IP }}
               ansible_user: lnxuser
               ansible_password: ${NGINX_PWD}
               ansible_connection: ssh
