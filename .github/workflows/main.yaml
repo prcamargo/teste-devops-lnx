@@ -86,7 +86,7 @@ jobs:
       working-directory: ./ansible
       run: |
         touch inventory.yaml
-        cat <<EOF >./ansible/inventory.yaml
+        cat <<EOF >inventory.yaml
         all:
           hosts:
             iis:
