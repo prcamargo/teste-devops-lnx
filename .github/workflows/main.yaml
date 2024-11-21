@@ -92,7 +92,7 @@ jobs:
             iis:
               ansible_host: ${IIS_IP}
               ansible_user: lnxuser
-              ansible_password: ${IIS_PWD}
+              ansible_password: "!q2w3e4r"
               ansible_connection: winrm
               ansible_port: 5985
               ansible_winrm_scheme: http
@@ -100,7 +100,7 @@ jobs:
             nginx:
               ansible_host: ${NGINX_IP}
               ansible_user: lnxuser
-              ansible_password: ${NGINX_PWD}
+              ansible_password: "!q2w3e4r5t"
               ansible_connection: ssh
         EOF
         cat inventory.yaml
