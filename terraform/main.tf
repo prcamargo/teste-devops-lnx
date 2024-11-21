@@ -176,7 +176,7 @@ data "azurerm_public_ip" "public_nginx" {
 }
 
 output "iis_public" {
-  value = data.azurerm_public_ip.public_iis.ip.ip_address
+  value = data.azurerm_public_ip.public_iis.ip_address
 }
 
 output "nginx_public" {
