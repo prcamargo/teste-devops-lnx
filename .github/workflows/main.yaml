@@ -89,7 +89,7 @@ jobs:
         all:
           hosts:
             iis:
-              ansible_host: ${{ env.IIS_IP }}"
+              ansible_host: ${IIS_IP}"
               ansible_user: lnxuser
               ansible_password: ${IIS_PWD}
               ansible_connection: winrm
@@ -97,7 +97,7 @@ jobs:
               ansible_winrm_scheme: http
               ansible_winrm_transport: basic
             nginx:
-              ansible_host: ${{ env.NGINX_IP }}
+              ansible_host: ${NGINX_IP}
               ansible_user: lnxuser
               ansible_password: ${NGINX_PWD}
               ansible_connection: ssh

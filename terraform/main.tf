@@ -163,11 +163,22 @@ resource "azurerm_virtual_machine_extension" "enable_winrm" {
 SETTINGS
 }
 
+data "azurerm_public_ip" "public_iis" {
+  name = azurerm_public_ip.pip02.name
+  resource_group_name = azurerm_resource_group.rg.name
+  depends_on = [ azurerm_windows_virtual_machine.iis ]
+}
+
+data "azurerm_public_ip" "public_nginx" {
+  name = azurerm_public_ip.pip01.name
+  resource_group_name = azurerm_resource_group.rg.name
+  depends_on = [ azurerm_linux_virtual_machine.nginx ]
+}
 
 output "iis_public" {
-  value = azurerm_public_ip.pip02.ip_address
+  value = data.azurerm_public_ip.public_iis.ip.ip_address
 }
 
 output "nginx_public" {
-  value = azurerm_public_ip.pip01.ip_address
+  value = data.azurerm_public_ip.public_nginx.ip_address
 }
