@@ -98,7 +98,7 @@ jobs:
               ansible_password: ${NGINX_PWD}
               ansible_connection: ssh
         EOF
-        cat ./ansible/invenroty.yaml
+        cat ./ansible/inventory.yaml
 
     - name: Run Ansible Playbook
       run: ansible-playbook -i ./ansible/inventory.yml ./ansible/tasks.yml
