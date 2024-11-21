@@ -110,5 +110,5 @@ jobs:
       run: |
         ls
         pwd
-        ansible-playbook -i inventory.yml tasks.yml
+        ansible-playbook -i inventory.yaml tasks.yml
 
