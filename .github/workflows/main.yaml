@@ -83,13 +83,14 @@ jobs:
         ls
 
     - name: Criar template ansible
+      working-directory: ./ansible
       run: |
-        touch ./ansible/inventory.yaml
+        touch inventory.yaml
         cat <<EOF >./ansible/inventory.yaml
         all:
           hosts:
             iis:
-              ansible_host: ${IIS_IP}"
+              ansible_host: ${IIS_IP}
               ansible_user: lnxuser
               ansible_password: ${IIS_PWD}
               ansible_connection: winrm
@@ -102,8 +103,12 @@ jobs:
               ansible_password: ${NGINX_PWD}
               ansible_connection: ssh
         EOF
-        cat ./ansible/inventory.yaml
+        cat inventory.yaml
 
     - name: Run Ansible Playbook
-      run: ansible-playbook -i ./ansible/inventory.yml ./ansible/tasks.yml
+      working-directory: ./ansible
+      run: |
+        ls
+        pwd
+        ansible-playbook -i inventory.yml tasks.yml
 
