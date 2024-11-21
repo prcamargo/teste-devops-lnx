@@ -97,7 +97,7 @@ resource "azurerm_linux_virtual_machine" "nginx" {
     version   = "latest"
   }
 
-  custom_data = filebase64("scripts/deploy_nginx.sh")
+  #custom_data = filebase64("scripts/deploy_nginx.sh")
 }
 
 #ip public (iis)

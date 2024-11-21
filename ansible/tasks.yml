@@ -43,6 +43,16 @@
         name: W3SVC
         state: started
 
+    - name: Reboot server
+      win_reboot:
+        timeout: 300
+        post_reboot_delay: 60
+      register: reboot_result
+
+    - name: Confirme reboot
+      debug:
+        msg: "servidor reiniciado {{ reboot_result }}"
+
     - name: Create C:\weather-app
       win_file:
         path: C:\inetpub\wwwroot\weather-app
