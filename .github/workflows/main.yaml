@@ -47,27 +47,6 @@ jobs:
     - name: Terraform Apply 
       run: cd terraform && terraform apply -auto-approve 
 
-    # - name: Get terraform output
-    #   id: terraform_outputs
-    #   working-directory: ./terraform
-    #   run: |
-    #       terraform output -json > outputs.json
-    #   env:
-    #     ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
-    #     ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
-    #     ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
-    #     ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-
-    # - name: Get ip public
-    #   id: terrafor_outputs
-    #   working-directory: ./terraform
-    #   run: |
-    #       NGINX_IP=$(terraform output -raw nginx_public)
-    #       IIS_IP=$(terraform output -raw iis_public)
-
-    #       echo "linux $NGINX_IP"
-    #       echo "windows $IIS_IP"
-
     - name: Get IPs VMs
       working-directory: ./terraform
       run: |
@@ -75,6 +54,17 @@ jobs:
           echo "IIS_IP=$IIS_IP" >> $GITHUB_ENV
           NGINX_IP=$(terraform output -raw nginx_public)
           echo "NGINX_IP=$NGINX_IP" >> $GITHUB_ENV
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    # Instalar pywinrm
+    - name: Install pywinrm
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install pywinrm
 
     # clone repo
     - name: Clone Weather Forecast App
@@ -107,8 +97,4 @@ jobs:
 
     - name: Run Ansible Playbook
       working-directory: ./ansible
-      run: |
-        ls
-        pwd
-        ansible-playbook -i inventory.yaml tasks.yml
-
+      run: ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yaml tasks.yml

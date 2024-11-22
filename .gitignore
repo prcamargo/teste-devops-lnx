@@ -2,3 +2,4 @@
 .terraform
 weather-app
 .env
+in.yaml

@@ -1,6 +1,8 @@
 ---
 - name: Deploy .NET Application to IIS
   hosts: iis
+  tags:
+    - iis
   tasks:
     - name: Create C:\temp
       win_file:
@@ -17,12 +19,9 @@
         removes:
           - C:\temp\install.ps1
 
-    - name: Install .NET Hosting Bundle
-      win_chocolatey:
-        name: dotnet-6.0-windowshosting
-        version: '6.0.36'
-        source: https://community.chocolatey.org/api/v2/
-        state: present
+    - name: Reboot a slow machine that might have lots of updates to apply
+      ansible.windows.win_reboot:
+        reboot_timeout: 3600
 
     - name: Install .NET SDK
       win_chocolatey:
@@ -43,15 +42,12 @@
         name: W3SVC
         state: started
 
-    - name: Reboot server
-      win_reboot:
-        timeout: 300
-        post_reboot_delay: 60
-      register: reboot_result
-
-    - name: Confirme reboot
-      debug:
-        msg: "servidor reiniciado {{ reboot_result }}"
+    - name: Install dotnet-6.0-windowshosting
+      win_chocolatey:
+        name: dotnet-6.0-windowshosting
+        version: '6.0.36'
+        source: https://community.chocolatey.org/api/v2/
+        state: present
 
     - name: Create C:\weather-app
       win_file:
@@ -88,13 +84,31 @@
     - name: Restart IIS
       win_shell: iisreset
 
+    - name: Criar regra de firewall para liberar a porta 8080
+      win_firewall_rule:
+        name: "Allow 8080"
+        enable: yes
+        direction: in
+        action: allow
+        localport: 8080
+        protocol: TCP
+        localip: any
+        remoteip: any
+
 - name: Configure Nginx proxy reverse
   hosts: nginx
+  become: yes
+  tags:
+    - nginx
   tasks:
+    - name: Atualizar cache de pacotes
+      ansible.builtin.apt:
+        update_cache: yes
+
     - name: Install Nginx
       apt:
         name: nginx
-        state: present
+        state: latest
 
     - name: Copy proxy configuration
       copy:
@@ -114,12 +128,6 @@
       file:
         path: /etc/nginx/sites-enabled/default
         state: absent
-
-    - name: Test Nginx configuration
-      command: nginx -t
-      register: nginx_test
-      failed_when: nginx_test.rc != 0
-      changed_when: false
 
     - name: Restart Nginx
       service:
